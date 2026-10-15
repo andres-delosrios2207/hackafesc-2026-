@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Script principal de ejecucion y validacion
+# Script principal de ejecucion y validacion
 set -e
 mkdir -p output
 
