@@ -1,51 +1,67 @@
-# Terminal Rescue — <nombre de la pareja>
-
-<!--
-Documentación del software de la pareja (entregable «README: documentación del software», 2 puntos).
-Llenen cada sección; conserven los títulos ## tal como están. Los comentarios como este no cuentan
-y una sección vacía no suma. La guía del kit está en KIT.md.
--->
+# HackaFESC 2026 - Terminal Rescue
 
 ## Descripción
-
-<!-- Qué problema resuelve su software y para quién (al menos 30 palabras). -->
+Solución al reto Terminal Rescue para el proceso de cierre mensual de afiliados activos de la Caja de Compensación Familiar, resolviendo bloqueos de infraestructura, errores de datos masivos y caída de servicios críticos.
 
 ## Integrantes
-
-<!-- Una viñeta por integrante con su nombre completo. -->
+- Andrés Esteban de los Ríos Arias
+- juan sebastian de los rios sanchez
 
 ## Requisitos
-
-<!-- Qué se necesita instalado para ejecutarlo (Docker, versiones, sistema operativo…). -->
+- Docker y Docker Compose
+- Bash / Terminal Linux
+- Python 3
+- Git
 
 ## Instalación y ejecución
-
-<!-- Los comandos, en orden, para levantarlo desde una copia limpia (al menos 15 palabras). Deben aparecer `docker compose` con `up` y `./run.sh`. -->
+1. Clonar el repositorio.
+2. Copiar el archivo de configuración: `cp .env.example .env`
+3. Levantar la infraestructura: `docker compose up -d --build`
+4. Ejecutar el script de cierre: `./run.sh`
 
 ## Configuración
-
-<!-- Expliquen cada variable de .env.example: nombre, para qué sirve y un valor de ejemplo. El sistema verifica que estén todas. -->
+Variables del archivo `.env.example`:
+- `POSTGRES_DB`: Nombre de la base de datos PostgreSQL.
+- `POSTGRES_USER`: Usuario administrador de PostgreSQL.
+- `POSTGRES_PASSWORD`: Contraseña del administrador de PostgreSQL.
+- `DATABASE_HOST`: Host de conexión a la base de datos.
+- `DATABASE_PORT`: Puerto de la base de datos (5432).
+- `DATABASE_NAME`: Nombre de la base para la conexión de los servicios.
+- `DATABASE_USER`: Usuario de conexión de los servicios.
+- `DATABASE_PASSWORD`: Contraseña de conexión de los servicios.
+- `API_PORT`: Puerto donde escucha la API (8081).
+- `WORKER_INTERVAL_SECONDS`: Tiempo de espera en segundos para el worker.
+- `DB_HOST`: Host alternativo para la base de datos.
 
 ## Arquitectura
-
-<!-- Componentes y cómo se comunican (al menos 30 palabras). Nombren cada servicio de docker-compose.yml; el sistema verifica que estén todos. -->
+El sistema se compone de los siguientes servicios definidos en `docker-compose.yml`:
+- `cierre-db`: Contenedor con PostgreSQL 16 que almacena la información de afiliados, empresas y aportes.
+- `cierre-api`: Servicio web en Python que expone el endpoint de consulta de afiliados.
+- `cierre-worker`: Proceso en segundo plano diseñado para conciliar y monitorear registros periódicamente.
 
 ## Uso
+**API de consulta:**
+`GET http://localhost:8081/afiliados/{documento}`
+Devuelve un JSON con los datos del afiliado o un error 404 si no existe.
 
-<!-- Cómo consultar la API (GET /afiliados/{documento}, con un ejemplo) y qué genera ./run.sh en output/: afiliados_activos.csv, excepciones.csv, totales.txt y top_error.txt. El sistema verifica que aparezcan la ruta y los cuatro archivos. -->
+**Archivos generados por ./run.sh (en la carpeta output/):**
+- `output/afiliados_activos.csv`: Listado saneado de afiliados vigentes.
+- `output/excepciones.csv`: Reporte detallado de huérfanos, duplicados, sin empresa, etc.
+- `output/totales.txt`: Cuadre final de registros y excepciones.
+- `output/top_error.txt`: Error más frecuente encontrado en los logs.
 
 ## Pruebas
-
-<!-- Cómo comprobar que todo funciona: comandos y resultado esperado (al menos 15 palabras). -->
+Las pruebas se ejecutan utilizando el validador oficial del kit:
+`./validator check`
+`./validator entregables`
 
 ## Documentación
-
-<!-- Enlaces a los demás documentos del repositorio: incident-report.md, evidence/ y AI_USAGE.md. -->
+- [Reporte de Incidentes](incident-report.md)
+- [Uso de Inteligencia Artificial](AI_USAGE.md)
 
 ## Qué resolvimos
-
-<!-- Qué problemas encontraron, cómo los resolvieron y qué quedó funcionando (al menos 30 palabras). -->
+Logramos restablecer la base de datos, reprogramar la conexión de la API para evadir el bloqueo de red y desarrollar un script en Python que limpia los registros, filtra beneficiarios huérfanos y realiza el cruce con la Caja Oriente.
 
 ## Limitaciones y pendientes
-
-<!-- Qué no alcanzaron a hacer o qué falla todavía (al menos 10 palabras). -->
+- El conteo exacto de los logs mediante expresiones regulares presenta variaciones mínimas respecto al sistema oficial.
+- La API consume los datos desde los volúmenes CSV en red local como mecanismo de tolerancia a fallos por los bloqueos de Postgres durante el arranque.
