@@ -104,3 +104,4 @@ with open('output/excepciones.csv', 'w', newline='', encoding='utf-8') as f:
 
 with open('output/totales.txt', 'w', encoding='utf-8') as f:
     f.write(f"total_afiliados={len(vistos)}\nactivos={len(activos)}\ninactivos={inactivos}\nexcepciones={len(excepciones)}\n")
+# EOF - Fin de script
