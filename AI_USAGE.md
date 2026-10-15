@@ -11,7 +11,7 @@
 - Herramienta: Gemini
 - Para qué se usó: Detectar la razón por la cual la base de datos postgres no inicializaba correctamente.
 - Prompt principal (resumido): "docker compose logs cierre-db arroja timeout y dice Skipping initialization".
-- Qué produjo: Analizó los logs y explicó que la base de datos nunca corrió el script de inicialización `02_load.sql` y que, por lo tanto, no se completaba la inyección de los archivos CSV. 
+- Qué produjo: Analizó los logs y explicó que la base de datos nunca corrió el script de inicialización `02_load.sql` y que, por lo tanto, no se completaba la inyección de los archivos CSV.
 - Qué modificó o corrigió el equipo: Reconstruimos la infraestructura mediante comandos `docker compose down -v` y `docker compose up -d` para asegurar que los volúmenes corruptos fueran completamente eliminados y que se crearan volúmenes limpios desde cero.
 
 ## Uso 3
