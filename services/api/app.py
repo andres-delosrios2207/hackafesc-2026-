@@ -1,4 +1,5 @@
 # API de consulta local de afiliados
+# API de consulta local de afiliados
 import json, logging, os, re, sys, csv
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
