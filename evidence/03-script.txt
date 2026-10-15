@@ -1,0 +1,2 @@
+Leyendo afiliados desde /opt/cierre/entrada/AFI_MAE.csv
+awk: cannot open "/opt/cierre/entrada/AFI_MAE.csv" (No such file or directory)

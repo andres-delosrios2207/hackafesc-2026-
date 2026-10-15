@@ -1,0 +1,2 @@
+total_afiliados=1520
+activos=1225

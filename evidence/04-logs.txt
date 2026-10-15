@@ -1,0 +1,4 @@
+   1068 logs/worker.log:codigo=CIE-4012
+    298 logs/worker.log:codigo=CIE-3301
+    158 logs/worker.log:codigo=CIE-1107
+    154 logs/worker.log:codigo=CIE-2210

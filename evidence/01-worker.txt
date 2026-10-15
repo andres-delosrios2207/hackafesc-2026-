@@ -1,0 +1,1 @@
+cierre-worker-1  | [2026-10-15T15:10:16Z] [ERROR] codigo=CIE-1107 WORKER_INTERVAL_SECONDS debe ser un entero de segundos; valor recibido: '30s'

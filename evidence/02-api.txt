@@ -1,0 +1,1 @@
+cierre-api-1  | 2026-10-15 15:10:16,735 INFO [cierre-api] cierre-api escuchando en el puerto 8081 (base: cierre-database)

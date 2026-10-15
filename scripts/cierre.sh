@@ -5,10 +5,10 @@
 # ---------------------------------------------------------------------------
 set -e
 
-ENTRADA=/opt/cierre/entrada
+ENTRADA=data
 SALIDA=output
 
-mkdir $SALIDA
+mkdir -p $SALIDA
 
 echo "Leyendo afiliados desde $ENTRADA/AFI_MAE.csv"
 
@@ -30,6 +30,6 @@ echo "activos=$ACTIVOS" >> $SALIDA/totales.txt
 
 # El archivo de entrada ya fue procesado
 mkdir -p $ENTRADA/procesados
-mv $ENTRADA/AFI_MAE.csv $ENTRADA/procesados/
+cp $ENTRADA/AFI_MAE.csv $ENTRADA/procesados/
 
 echo "Cierre terminado"
