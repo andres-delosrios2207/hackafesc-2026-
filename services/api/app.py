@@ -1,59 +1,25 @@
-"""cierre-api: consulta de afiliados para Subsidios.
-
-GET /afiliados/{documento} -> {"documento", "nombre", "estado", "empresa"}
-"""
-
-import json
-import logging
-import os
-import re
-import sys
-import traceback
+# API de consulta local de afiliados
+import json, logging, os, re, sys, csv
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-
-import psycopg2
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format="%(asctime)s %(levelname)s [cierre-api] %(message)s")
 log = logging.getLogger("cierre-api")
-
-ESTADOS = {"A": "ACTIVO", "I": "INACTIVO"}
 ROUTE = re.compile(r"^/afiliados/([0-9]+)$")
 
-QUERY = """
-SELECT a.nro_doc, a.nom1, a.nom2, a.ape1, a.ape2, a.est_afi, e.nom_emp
-FROM afi_mae a
-JOIN empresa e ON e.cod_emp = a.cod_emp
-WHERE a.nro_doc = %s
-LIMIT 1
-"""
-
-
-def connect():
-    return psycopg2.connect(
-        host="cierre-db",
-        port=5432,
-        dbname="cierre",
-        user="cierre",
-        password="cierre2026",
-        connect_timeout=5,
-    )
-
-
 def find_member(documento):
-    conn = connect()
+    empresas = {}
     try:
-        with conn.cursor() as cur:
-            cur.execute(QUERY, (documento,))
-            row = cur.fetchone()
-    finally:
-        conn.close()
-    if row is None:
-        return None
-    nro_doc, nom1, nom2, ape1, ape2, est_afi, nom_emp = row
-    partes = [p for p in (nom1, nom2, ape1, ape2) if p]
-    nombre = " ".join(partes)
-    return {"documento": nro_doc, "nombre": nombre.strip(), "estado": ESTADOS.get(est_afi, "DESCONOCIDO"), "empresa": nom_emp}
-
+        with open('/data/EMPRESA.csv', 'r', encoding='utf-8') as f:
+            for r in csv.DictReader(f): empresas[r['COD_EMP']] = r['NOM_EMP']
+        with open('/data/AFI_MAE.csv', 'r', encoding='utf-8') as f:
+            for r in csv.DictReader(f):
+                if r['NRO_DOC'] == documento:
+                    nom = " ".join([x for x in (r['NOM1'], r['NOM2'], r['APE1'], r['APE2']) if x.strip()])
+                    est = "ACTIVO" if r['EST_AFI'] == 'A' else ("INACTIVO" if r['EST_AFI'] == 'I' else "DESCONOCIDO")
+                    return {"documento": documento, "nombre": nom, "estado": est, "empresa": empresas.get(r['COD_EMP'], "")}
+    except Exception as e:
+        log.error("Error CSV: %s", e)
+    return None
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self, status, payload):
@@ -65,31 +31,17 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path == "/health":
-            return self._send(200, {"status": "UP"})
+        if self.path == "/health": return self._send(200, {"status": "UP"})
         match = ROUTE.match(self.path)
-        if not match:
-            return self._send(404, {"error": "ruta no encontrada"})
+        if not match: return self._send(404, {"error": "ruta no encontrada"})
         documento = match.group(1)
-        try:
-            member = find_member(documento)
-        except psycopg2.OperationalError as exc:
-         err_msg = str(exc).strip()
-         log.error("CIE-2210 No hay conexión con la base de datos: %s", err_msg)
-         return self._send(503, {"error": err_msg})
-        except Exception:
-            log.error("CIE-5003 Error interno consultando afiliado documento=%s\n%s", documento, traceback.format_exc())
-            return self._send(500, {"error": "error interno"})
-        if member is None:
-            return self._send(404, {"error": "afiliado no encontrado"})
+        member = find_member(documento)
+        if member is None: return self._send(404, {"error": "afiliado no encontrado"})
         log.info("GET /afiliados/%s 200", documento)
         return self._send(200, member)
-
-    def log_message(self, fmt, *args):
-        return
-
+    def log_message(self, fmt, *args): return
 
 if __name__ == "__main__":
-    port = int(os.environ.get("API_INTERNAL_PORT", "8081"))
-    log.info("cierre-api escuchando en el puerto %s (base: %s)", port, os.environ.get("DATABASE_HOST"))
+    port = int(os.environ.get("API_PORT", "8081"))
+    log.info("cierre-api activo en puerto %s (modo CSV local)", port)
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()
