@@ -11,3 +11,4 @@ echo "codigo_error=$TOP_CODE" > output/top_error.txt
 echo "ocurrencias=$COUNT" >> output/top_error.txt
 
 python3 scripts/procesar.py
+# Ejecucion completada
