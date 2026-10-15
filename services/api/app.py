@@ -30,12 +30,12 @@ LIMIT 1
 
 def connect():
     return psycopg2.connect(
-        host=os.environ.get("DATABASE_HOST", "localhost"),
-        port=int(os.environ.get("DATABASE_PORT", "5432")),
-        dbname=os.environ.get("DATABASE_NAME", "cierre"),
-        user=os.environ.get("DATABASE_USER", "cierre"),
-        password=os.environ.get("DATABASE_PASSWORD", ""),
-        connect_timeout=3,
+        host="cierre-db",
+        port=5432,
+        dbname="cierre",
+        user="cierre",
+        password="cierre2026",
+        connect_timeout=5,
     )
 
 
@@ -50,8 +50,9 @@ def find_member(documento):
     if row is None:
         return None
     nro_doc, nom1, nom2, ape1, ape2, est_afi, nom_emp = row
-    nombre = nom1 + " " + nom2 + " " + ape1 + " " + ape2
-    return {"documento": nro_doc, "nombre": nombre.strip(), "estado": ESTADOS[est_afi], "empresa": nom_emp}
+    partes = [p for p in (nom1, nom2, ape1, ape2) if p]
+    nombre = " ".join(partes)
+    return {"documento": nro_doc, "nombre": nombre.strip(), "estado": ESTADOS.get(est_afi, "DESCONOCIDO"), "empresa": nom_emp}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -73,8 +74,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             member = find_member(documento)
         except psycopg2.OperationalError as exc:
-            log.error("CIE-2210 No hay conexión con la base de datos: %s", str(exc).strip())
-            return self._send(503, {"error": "base de datos no disponible"})
+         err_msg = str(exc).strip()
+         log.error("CIE-2210 No hay conexión con la base de datos: %s", err_msg)
+         return self._send(503, {"error": err_msg})
         except Exception:
             log.error("CIE-5003 Error interno consultando afiliado documento=%s\n%s", documento, traceback.format_exc())
             return self._send(500, {"error": "error interno"})
